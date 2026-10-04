@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EduInteractive Master AI - Generator Prompt MPI</title>
+<!-- Library untuk Ekspor PDF dan JPG -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --accent: #7c3aed;
+  --gold: #f59e0b;
+  --gold-dark: #d97706;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --success: #10b981;
+  --danger: #ef4444;
+  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --radius: 16px;
+  --touch-target: 56px;
+}
+
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  -webkit-tap-highlight-color: transparent; 
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+  touch-action: manipulation;
+}
+
+/* ============================= */
+/* BADGE ABU RAHMI - STYLING     */
+/* ============================= */
+.author-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.3px;
+  border: 2px solid rgba(255,255,255,0.4);
+}
+.author-badge::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 3s infinite;
+}
+@keyframes shimmer {
+  0% { left: -100%; }
+  50%, 100% { left: 100%; }
+}
+.author-badge .badge-icon {
+  font-size: 16px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+.author-badge .badge-label {
+  opacity: 0.9;
+  font-weight: 500;
+  font-size: 12px;
+}
+.author-badge .badge-name {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* Badge di Cover - Versi Besar */
+.cover .author-badge {
+  padding: 12px 28px;
+  font-size: 16px;
+  margin-top: 20px;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.cover .author-badge .badge-name { font-size: 18px; }
+.cover .author-badge .badge-icon { font-size: 20px; }
+
+/* Badge di Header - Versi Menengah */
+header .author-badge {
+  margin-top: 12px;
+  padding: 10px 22px;
+}
+
+/* Floating Badge di Pojok (Desktop Only) */
+.floating-badge {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+  background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid rgba(255,255,255,0.2);
+  animation: floatBadge 3s ease-in-out infinite;
+}
+.floating-badge:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 12px 28px rgba(30, 58, 138, 0.5);
+}
+.floating-badge .fb-icon {
+  font-size: 18px;
+}
+.floating-badge .fb-name {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  padding: 2px 10px;
+  border-radius: 20px;
+  color: #1e293b;
+  font-weight: 800;
+}
+@keyframes floatBadge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Footer Badge */
+.footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 13px;
+  margin-top: 10px;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* ============================= */
+/* COVER / SPLASH SCREEN         */
+/* ============================= */
+.cover {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000;
+  background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #db2777 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: #fff; text-align: center; padding: 20px; 
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.cover.hidden { opacity: 0; pointer-events: none; transform: scale(1.05); }
+.cover h1 { font-size: clamp(28px, 5vw, 48px); margin-bottom: 16px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.cover p { font-size: clamp(14px, 2vw, 20px); max-width: 800px; margin-bottom: 20px; opacity: 0.9; }
+.cover .btn-start {
+  background: #fff; color: var(--primary-dark); border: none; 
+  padding: 20px 40px; font-size: clamp(16px, 2vw, 24px); font-weight: 800;
+  border-radius: 50px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+  transition: all 0.2s; min-height: var(--touch-target);
+}
+.cover .btn-start:active { transform: scale(0.95); }
+.cover .floating-shapes{position:absolute;width:100%;height:100%;top:0;left:0;overflow:hidden;z-index:-1}
+.cover .shape{position:absolute;background:rgba(255,255,255,0.1);border-radius:50%;animation:float 15s infinite ease-in-out}
+.cover .shape:nth-child(1){width:200px;height:200px;top:10%;left:10%;animation-delay:0s}
+.cover .shape:nth-child(2){width:150px;height:150px;top:70%;left:80%;animation-delay:2s}
+.cover .shape:nth-child(3){width:300px;height:300px;top:40%;left:60%;animation-delay:4s}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-30px) rotate(10deg)}}
+
+/* ============================= */
+/* MAIN APP                      */
+/* ============================= */
+.app-container { max-width: 1400px; margin: 0 auto; padding: 20px; display: none; }
+.app-container.active { display: block; animation: fadeIn 0.6s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+header { text-align: center; margin-bottom: 30px; padding: 20px 0; }
+header h1 { font-size: clamp(24px, 4vw, 36px); color: var(--primary-dark); margin-bottom: 8px; }
+header p { color: var(--muted); font-size: clamp(14px, 1.5vw, 18px); }
+
+.grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+.card {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); 
+  padding: 24px; box-shadow: var(--shadow); transition: transform 0.2s;
+}
+.card h2 { font-size: clamp(18px, 2vw, 24px); margin-bottom: 20px; color: var(--primary-dark); display: flex; align-items: center; gap: 10px; }
+.card h2 span { font-size: 24px; }
+
+label.field-label { display: block; font-weight: 700; margin: 16px 0 8px; font-size: clamp(14px, 1.5vw, 16px); }
+input, select, textarea {
+  width: 100%; padding: 14px 18px; min-height: var(--touch-target);
+  border: 2px solid var(--border); border-radius: 12px;
+  font: inherit; font-size: 16px; background: #fff; color: var(--text); 
+  transition: all 0.2s; touch-action: manipulation;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+textarea { min-height: 100px; resize: vertical; }
+
+.row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.checks { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 10px; }
+
+.check {
+  border: 2px solid var(--border); border-radius: 12px; padding: 16px; 
+  min-height: var(--touch-target); display: flex; gap: 12px; align-items: center;
+  cursor: pointer; transition: all 0.2s; background: #fff; font-weight: 600; font-size: 16px;
+  touch-action: manipulation;
+}
+.check:active { transform: scale(0.98); background: #f1f5f9; }
+.check:has(input:checked) { border-color: var(--primary); background: #eff6ff; color: var(--primary-dark); }
+.check input[type="checkbox"] { width: 24px; height: 24px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+button {
+  min-height: var(--touch-target); padding: 14px 24px; border: 0; border-radius: 12px; 
+  font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.2s; 
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  touch-action: manipulation;
+}
+button:active { transform: scale(0.95); }
+.primary { background: var(--primary); color: #fff; }
+.secondary { background: #e0e7ff; color: #3730a3; }
+.green { background: #d1fae5; color: #065f46; }
+.purple { background: #ede9fe; color: #5b21b6; }
+.red { background: #fee2e2; color: #991b1b; }
+
+.output-section { margin-top: 30px; }
+.output {
+  min-height: 400px; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; line-height: 1.6;
+  background: #0f172a; color: #e2e8f0; border-radius: var(--radius); padding: 24px; 
+  white-space: pre-wrap; overflow: auto; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); 
+  border: 1px solid #334155;
+}
+
+footer { text-align: center; color: var(--muted); padding: 40px 20px; font-size: 14px; }
+
+/* RESPONSIVE BREAKPOINTS */
+@media (min-width: 768px) {
+  .row { grid-template-columns: 1fr 1fr; }
+  .checks { grid-template-columns: repeat(2, 1fr); }
+  .grid { grid-template-columns: 1fr 1fr; }
+  .card { padding: 32px; }
+}
+@media (min-width: 1024px) {
+  .checks { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 1280px) {
+  :root { --touch-target: 64px; }
+  body { font-size: 18px; }
+  input, select, textarea, .check, button { font-size: 18px; }
+  .checks { grid-template-columns: repeat(2, 1fr); }
+  .output { font-size: 16px; }
+}
+/* Sembunyikan floating badge di layar kecil agar tidak mengganggu */
+@media (max-width: 768px) {
+  .floating-badge { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover" id="cover">
+  <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+  <h1>🎓 EduInteractive Master AI</h1>
+  <p>Generator Prompt Media Pembelajaran Interaktif (MPI) Berbasis Kurikulum Merdeka. Dioptimalkan untuk FID, Desktop, dan Smartphone.</p>
+  
+  <!-- BADGE ABU RAHMI DI COVER -->
+  <div class="author-badge">
+    <span class="badge-icon">✨</span>
+    <span class="badge-label">Created by</span>
+    <span class="badge-name">Abu Rahmi</span>
+  </div>
+  
+  <button class="btn-start" onclick="startApp()" style="margin-top:30px">🚀 Mulai Membuat Prompt</button>
+</div>
+
+<!-- FLOATING BADGE (PoKok Kanan Bawah) -->
+<div class="floating-badge" onclick="alert('Generator Prompt MPI\\nDikembangkan oleh: Abu Rahmi\\n\\nUntuk Media Pembelajaran Interaktif yang Pedagogis & Bermakna')">
+  <span class="fb-icon">👨‍💻</span>
+  <span>by</span>
+  <span class="fb-name">Abu Rahmi</span>
+</div>
+
+<!-- MAIN APP -->
+<div class="app-container" id="app">
+  <header>
+    <h1>Generator Prompt MPI</h1>
+    <p>Rancang Media Pembelajaran Interaktif yang Pedagogis, Dinamis, dan Multi-Perangkat</p>
+    
+    <!-- BADGE ABU RAHMI DI HEADER -->
+    <div class="author-badge">
+      <span class="badge-icon">⭐</span>
+      <span class="badge-label">Developed by</span>
+      <span class="badge-name">Abu Rahmi</span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- IDENTITAS -->
+    <section class="card">
+      <h2><span>📚</span> Identitas Pembelajaran</h2>
+      <div class="row">
+        <div><label class="field-label">Mata Pelajaran</label><input id="mapel" value="Pendidikan Agama Islam"></div>
+        <div><label class="field-label">Jenjang</label><select id="jenjang"><option>SD</option><option>SMP</option><option>SMA</option></select></div>
+      </div>
+      <div class="row">
+        <div><label class="field-label">Kelas</label><input id="kelas" value="4"></div>
+        <div><label class="field-label">Fase</label><select id="fase"><option>A</option><option>B</option><option selected>C</option><option>D</option><option>E</option><option>F</option></select></div>
+      </div>
+      <label class="field-label">Materi Pokok</label><input id="materi" placeholder="Contoh: Asmaulhusna Al-Wahhab dan Al-Kabir">
+      <label class="field-label">Tujuan Pembelajaran</label><textarea id="tujuan" placeholder="Peserta didik mampu memahami dan mengamalkan..."></textarea>
+      <div class="row">
+        <div><label class="field-label">Alokasi Waktu</label><input id="waktu" value="2 x 35 menit"></div>
+        <div><label class="field-label">Bahasa</label><input id="bahasa" value="Bahasa Indonesia"></div>
+      </div>
+    </section>
+
+    <!-- DESAIN & PLATFORM -->
+    <section class="card">
+      <h2><span>🎨</span> Desain & Platform</h2>
+      <div class="row">
+        <div><label class="field-label">Gaya Visual</label><select id="gaya">
+          <option>Cartoon Ramah Anak</option><option>Modern Minimalis</option><option>Islami Elegan</option>
+          <option>Futuristik Edukatif</option><option>Gamifikasi Ceria</option>
+        </select></div>
+        <div><label class="field-label">Tema Warna</label><input id="warna" value="Cerah, kontras baik, hindari warna menyilaukan (neon)"></div>
+      </div>
+      <div class="row">
+        <div><label class="field-label">Platform</label><select id="platform"><option>HTML Web (Canva AI Mode Kode)</option><option>Canva Presentasi</option><option>PowerPoint</option></select></div>
+        <div><label class="field-label">Mode Akses</label><select id="mode"><option>Offline (FID/Laptop)</option><option>Online</option><option>Offline & Online</option></select></div>
+      </div>
+      <label class="field-label">Nama Pembuat</label><input id="pembuat" value="M. Ripani, S.Pd">
+      <label class="field-label">Fitur Interaktif</label>
+      <div class="checks" id="fitur-checks">
+        <label class="check"><input type="checkbox" value="Drag and Drop" checked> Drag & Drop</label>
+        <label class="check"><input type="checkbox" value="Matching" checked> Matching</label>
+        <label class="check"><input type="checkbox" value="Kuis Pilihan Ganda" checked> Kuis Interaktif</label>
+        <label class="check"><input type="checkbox" value="Game Edukasi" checked> Game/Misi</label>
+        <label class="check"><input type="checkbox" value="Tebak Gambar"> Tebak Gambar</label>
+        <label class="check"><input type="checkbox" value="Susun Kata"> Susun Kata</label>
+        <label class="check"><input type="checkbox" value="Simulasi/Lab Maya"> Lab Maya</label>
+        <label class="check"><input type="checkbox" value="Timer & Skor"> Timer & Skor</label>
+        <label class="check"><input type="checkbox" value="Progress Bar" checked> Progress Bar</label>
+        <label class="check"><input type="checkbox" value="Audio/Narasi"> Audio/Narasi</label>
+      </div>
+    </section>
+
+    <!-- PEDAGOGI & ASESMEN -->
+    <section class="card">
+      <h2><span>🧠</span> Pedagogi & Asesmen</h2>
+      <label class="field-label">Pendekatan Pembelajaran</label>
+      <div class="checks" id="prinsip-checks">
+        <label class="check"><input type="checkbox" value="Mindful" checked> Mindful (Berkesadaran)</label>
+        <label class="check"><input type="checkbox" value="Meaningful" checked> Meaningful (Bermakna)</label>
+        <label class="check"><input type="checkbox" value="Joyful" checked> Joyful (Menyenangkan)</label>
+        <label class="check"><input type="checkbox" value="Hands-on & Minds-on" checked> Hands-on & Minds-on</label>
+      </div>
+      <div class="row">
+        <div><label class="field-label">Jumlah Soal Kuis</label><input id="jumlah" type="number" min="5" max="50" value="10"></div>
+        <div><label class="field-label">Bentuk Bahan Ajar</label><select id="bentuk">
+          <option>Bahan Ajar Interaktif (Linier)</option><option>Gim Edukasi (Pathway/Misi)</option><option>Lab Maya (Simulasi)</option>
+        </select></div>
+      </div>
+      <label class="field-label">Jenis Asesmen</label>
+      <div class="checks" id="asesmen-checks">
+        <label class="check"><input type="checkbox" value="As Learning" checked> Asesmen As Learning</label>
+        <label class="check"><input type="checkbox" value="For Learning" checked> Asesmen For Learning</label>
+        <label class="check"><input type="checkbox" value="Of Learning" checked> Asesmen Of Learning</label>
+      </div>
+      <label class="field-label">Instruksi Tambahan / Kontekstual</label>
+      <textarea id="tambahan" placeholder="Contoh: Tambahkan karakter maskot lokal, gunakan konteks kehidupan sehari-hari..."></textarea>
+    </section>
+
+    <!-- PENGATURAN OUTPUT -->
+    <section class="card">
+      <h2><span>⚙️</span> Pengaturan Output</h2>
+      <label class="field-label">Target AI</label>
+      <select id="target">
+        <option>Canva AI (Mode Kode)</option><option>Gemini</option><option>ChatGPT</option><option>Claude</option><option>Universal</option>
+      </select>
+      <label class="field-label">Format Output</label>
+      <select id="format">
+        <option>Prompt Lengkap & Terstruktur</option><option>Prompt Ringkas</option><option>Prompt + Spesifikasi Teknis HTML</option>
+      </select>
+      <div class="actions">
+        <button class="primary" onclick="generate()">✨ Generate Prompt</button>
+        <button class="secondary" onclick="copyPrompt()">📋 Salin Teks</button>
+        <button class="green" onclick="downloadPDF()">📄 Cetak PDF</button>
+        <button class="purple" onclick="downloadJPG()">🖼️ Cetak JPG</button>
+        <button class="red" onclick="resetForm()">↺ Reset</button>
+      </div>
+      <p style="font-size:14px;color:var(--muted);margin-top:15px;">💡 <strong>Optimasi Multi-Perangkat:</strong> Prompt ini sudah dilengkapi instruksi ketat agar AI membuat media yang responsif di FID, Desktop, dan Smartphone.</p>
+    </section>
+  </div>
+
+  <!-- OUTPUT SECTION -->
+  <section class="card output-section">
+    <h2><span>📝</span> Hasil Prompt (Siap Disalin ke AI)</h2>
+    <div id="output" class="output">Klik "✨ Generate Prompt" untuk membuat prompt yang selaras dengan prinsip MPI Kurikulum Merdeka.</div>
+  </section>
+</div>
+
+<footer>
+  <p>Generator Prompt Media Pembelajaran Interaktif • EduInteractive Master AI</p>
+  <!-- BADGE ABU RAHMI DI FOOTER -->
+  <div class="footer-badge">
+    <span>👨‍💻</span>
+    <span>Developed by <strong>Abu Rahmi</strong></span>
+  </div>
+  <p style="margin-top:10px;font-size:12px;">Dioptimalkan untuk FID, Desktop, dan Smartphone | Disusun berdasarkan Panduan Digitalisasi Pembelajaran SD</p>
+</footer>
+
+<script>
+function startApp() {
+  document.getElementById('cover').classList.add('hidden');
+  setTimeout(() => document.getElementById('app').classList.add('active'), 400);
+}
+
+function val(id) { return document.getElementById(id).value.trim(); }
+function getChecked(containerId) {
+  return [...document.querySelectorAll(`#${containerId} input[type=checkbox]:checked`)].map(x => x.value);
+}
+
+function generate() {
+  const fitur = getChecked('fitur-checks');
+  const prinsip = getChecked('prinsip-checks');
+  const asesmen = getChecked('asesmen-checks');
+
+  const prompt = `[ROLE & IDENTITAS]
+Bertindaklah sebagai "EduInteractive Master AI", ahli dalam merancang Media Pembelajaran Interaktif (MPI) yang pedagogis, menarik, ramah anak, responsif, dan sesuai Kurikulum Merdeka.
+
+[TUJUAN]
+Buat Media Pembelajaran Interaktif yang membuat murid aktif berpikir, mencoba, dan memberikan respons. Media harus bermakna dan melibatkan murid secara aktif.
+
+[DATA PEMBELAJARAN]
+Mata Pelajaran : ${val('mapel')}
+Jenjang/Kelas  : ${val('jenjang')} / Kelas ${val('kelas')} (Fase ${val('fase')})
+Materi         : ${val('materi') || '[ISI MATERI]'}
+Tujuan         : ${val('tujuan') || '[ISI TUJUAN PEMBELAJARAN]'}
+Alokasi Waktu  : ${val('waktu')}
+Bentuk Media   : ${val('bentuk')}
+Pembuat        : ${val('pembuat')}
+
+[RESPONSIVITAS & KOMPATIBILITAS PERANGKAT (WAJIB DITERAPKAN)]
+Media yang dihasilkan HARUS berfungsi sempurna dan dinamis di tiga jenis perangkat:
+1. FID (Flat Panel Interactive Display / Papan Interaktif): 
+   - Gunakan tombol dan area sentuh (touch targets) minimal 60x60 piksel.
+   - JANGAN mengandalkan efek ':hover' untuk fungsi penting. Gunakan ':active' atau ':focus'.
+   - Tipografi harus besar dan kontras tinggi agar terbaca dari jarak jauh.
+2. Desktop / Laptop: 
+   - Layout adaptif menggunakan CSS Grid/Flexbox.
+   - Mendukung navigasi mouse dan keyboard.
+3. Smartphone / Tablet: 
+   - Layout otomatis menyesuaikan (single column / stacked).
+   - Mendukung gestur sentuh dan mencegah zoom tidak sengaja.
+
+[DESAIN DINAMIS & UI/UX]
+- Gunakan CSS Variables untuk manajemen warna dan tema.
+- Tambahkan transisi halus dan animasi ringan agar media terasa 'hidup'.
+- Pastikan setiap elemen interaktif memiliki state visual yang jelas.
+- Hindari animasi berlebihan yang memperlambat rendering.
+
+[PRINSIP KERJA MPI]
+1. Input Pengguna: Murid memberi respons (klik, pilih, drag, ketik).
+2. Proses Sistem: Sistem memvalidasi input.
+3. Umpan Balik: Berikan feedback langsung.
+4. Coba Lagi: Jika salah, beri petunjuk korektif.
+5. Hasil Belajar: Murid memperoleh pemahaman.
+
+[FITUR INTERAKTIF]
+${fitur.length ? fitur.map(x => '• ' + x).join('\n') : '• Pilih fitur yang sesuai'}
+
+[PRINSIP PEDAGOGI]
+${prinsip.length ? prinsip.map(x => '• ' + x).join('\n') : '• Mindful\n• Meaningful\n• Joyful'}
+
+[STRUKTUR MEDIA]
+1. Cover (Judul, Identitas, Tombol MULAI).
+2. Menu Utama / Peta Konsep.
+3. Apersepsi & Pertanyaan Pemantik.
+4. Materi inti (Dibagi menjadi bagian kecil).
+5. Aktivitas Interaktif / Game.
+6. Kuis Akhir (${val('jumlah')} soal).
+7. Halaman Hasil & Refleksi.
+
+[ASESMEN & GAMIFIKASI]
+${asesmen.length ? asesmen.map(x => '• Asesmen ' + x).join('\n') : '• Formatif & Sumatif'}
+Gunakan poin, badge, atau progress bar. Feedback harus edukatif.
+
+[KHUSUS JIKA MEMBUAT HTML]
+Gunakan HTML5, CSS3, dan JavaScript murni dalam SATU FILE. Pastikan semua tombol, navigasi, kuis, dan progress bekerja sempurna tanpa error. Gunakan localStorage untuk menyimpan progres.
+
+[INSTRUKSI TAMBAHAN]
+${val('tambahan') || 'Tidak ada instruksi tambahan.'}
+
+[OUTPUT]
+Target AI: ${val('target')}
+Format: ${val('format')}
+
+Sebelum membuat kode, susun konsep singkat. Setelah itu, hasilkan media yang siap digunakan dan telah lolos uji responsivitas di FID, Desktop, dan Mobile.`;
+
+  document.getElementById('output').textContent = prompt;
+}
+
+function copyPrompt() {
+  const text = document.getElementById('output').textContent;
+  if (!text || text.startsWith('Klik')) generate();
+  navigator.clipboard.writeText(document.getElementById('output').textContent).then(() => {
+    alert('✅ Prompt berhasil disalin!');
+  });
+}
+
+function downloadPDF() {
+  const text = document.getElementById('output').textContent;
+  if (!text || text.startsWith('Klik')) generate();
+  const outputDiv = document.getElementById('output');
+  html2canvas(outputDiv, { scale: 2, backgroundColor: "#0f172a" }).then(canvas => {
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const imgWidth = pdfWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pdf.internal.pageSize.getHeight();
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdf.internal.pageSize.getHeight();
+    }
+    pdf.save('Prompt_MPI_AbuRahmi.pdf');
+  });
+}
+
+function downloadJPG() {
+  const text = document.getElementById('output').textContent;
+  if (!text || text.startsWith('Klik')) generate();
+  const outputDiv = document.getElementById('output');
+  html2canvas(outputDiv, { scale: 2, backgroundColor: "#0f172a" }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'Prompt_MPI_AbuRahmi.jpg';
+    link.href = canvas.toDataURL('image/jpeg', 0.9);
+    link.click();
+  });
+}
+
+function resetForm() {
+  if (confirm('Yakin ingin mereset semua isian?')) location.reload();
+}
+</script>
+</body>
+</html>
